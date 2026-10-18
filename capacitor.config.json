@@ -1,6 +1,6 @@
 {
   "appId": "com.najjar.cutting",
-  "appName": "حاسبة القطع",
+  "appName": "Najjar Cut V2",
   "webDir": "www",
   "server": {
     "androidScheme": "https"
