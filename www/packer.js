@@ -1,8 +1,8 @@
 /**
- * خوارزمية تقطيع مستطيلات مع احتساب مسافة المنشار (Kerf)
+ * خوارزمية MaxRects - الأكثر دقة لترتيب القطع مع مسافة المنشار
  */
 function packPieces(boardW, boardH, pieces, kerf) {
-  // قائمة المساحات الفارغة في اللوح
+  // المساحة المتاحة في البداية هي اللوح كاملاً
   let freeRects = [{ x: 0, y: 0, w: boardW, h: boardH }];
   const placed = [];
 
@@ -17,26 +17,26 @@ function packPieces(boardW, boardH, pieces, kerf) {
 
   for (const piece of sorted) {
     let bestIdx = -1;
-    let bestWaste = Infinity;
+    let bestArea = Infinity;
     let rotated = false;
 
-    // البحث عن أفضل مكان للقطعة
+    // البحث عن أفضل مساحة فارغة تناسب القطعة
     for (let i = 0; i < freeRects.length; i++) {
       const r = freeRects[i];
       
-      // المحاولة بدون تدوير
+      // 1. المحاولة بدون تدوير
       if (piece.w <= r.w && piece.h <= r.h) {
-        const waste = (r.w * r.h) - (piece.w * piece.h);
-        if (waste < bestWaste) { bestWaste = waste; bestIdx = i; rotated = false; }
+        const area = r.w * r.h;
+        if (area < bestArea) { bestArea = area; bestIdx = i; rotated = false; }
       }
-      // المحاولة مع التدوير
+      // 2. المحاولة مع التدوير
       if (piece.h <= r.w && piece.w <= r.h) {
-        const waste = (r.w * r.h) - (piece.h * piece.w);
-        if (waste < bestWaste) { bestWaste = waste; bestIdx = i; rotated = true; }
+        const area = r.w * r.h;
+        if (area < bestArea) { bestArea = area; bestIdx = i; rotated = true; }
       }
     }
 
-    // إذا لم يجد مكاناً، يتخطى القطعة
+    // إذا لم يجد مكاناً، يتخطى القطعة (يمكنك تسجيلها كقطعة غير موضوعة)
     if (bestIdx === -1) continue;
 
     const rect = freeRects[bestIdx];
@@ -50,18 +50,65 @@ function packPieces(boardW, boardH, pieces, kerf) {
       origW: piece.w, origH: piece.h
     });
 
-    // إزالة المساحة المستخدمة
-    freeRects.splice(bestIdx, 1);
+    // --- تحديث المساحات الفارغة (MaxRects Algorithm) ---
+    let newFreeRects = [];
+    
+    // نمر على جميع المساحات الفارغة الحالية ونقصها بناءً على القطعة الموضوعة
+    for (let i = 0; i < freeRects.length; i++) {
+      const r = freeRects[i];
+      
+      // إذا كانت المساحة الفارغة لا تتقاطع مع القطعة الموضوعة، نحتفظ بها كما هي
+      if (r.x + r.w <= rect.x || r.x >= rect.x + pw + kerf || r.y + r.h <= rect.y || r.y >= rect.y + ph + kerf) {
+        newFreeRects.push(r);
+        continue;
+      }
 
-    // حساب المساحات المتبقية (يمين وأسفل) مع طرح مسافة المنشار (kerf)
-    const rightW = rect.w - pw - kerf;
-    const bottomH = rect.h - ph - kerf;
-
-    if (rightW > 0) {
-      freeRects.push({ x: rect.x + pw + kerf, y: rect.y, w: rightW, h: rect.h });
+      // إذا تقاطعت، نقسمها إلى 4 أجزاء (يمين، يسار، فوق، تحت) مع مراعاة الـ kerf
+      // 1. الجزء الأيسر
+      if (r.x < rect.x) {
+        newFreeRects.push({ x: r.x, y: r.y, w: rect.x - r.x, h: r.h });
+      }
+      // 2. الجزء الأيمن (مع طرح الـ kerf)
+      if (r.x + r.w > rect.x + pw + kerf) {
+        newFreeRects.push({ 
+          x: rect.x + pw + kerf, 
+          y: r.y, 
+          w: r.x + r.w - (rect.x + pw + kerf), 
+          h: r.h 
+        });
+      }
+      // 3. الجزء العلوي
+      if (r.y < rect.y) {
+        newFreeRects.push({ x: r.x, y: r.y, w: r.w, h: rect.y - r.y });
+      }
+      // 4. الجزء السفلي (مع طرح الـ kerf)
+      if (r.y + r.h > rect.y + ph + kerf) {
+        newFreeRects.push({ 
+          x: r.x, 
+          y: rect.y + ph + kerf, 
+          w: r.w, 
+          h: r.y + r.h - (rect.y + ph + kerf) 
+        });
+      }
     }
-    if (bottomH > 0) {
-      freeRects.push({ x: rect.x, y: rect.y + ph + kerf, w: rect.w, h: bottomH });
+
+    // إزالة المساحات الفارغة المتداخلة أو الصغيرة جداً لتحسين الأداء
+    freeRects = [];
+    for (let i = 0; i < newFreeRects.length; i++) {
+      let isContained = false;
+      for (let j = 0; j < newFreeRects.length; j++) {
+        if (i !== j && 
+            newFreeRects[i].x >= newFreeRects[j].x && 
+            newFreeRects[i].y >= newFreeRects[j].y &&
+            newFreeRects[i].x + newFreeRects[i].w <= newFreeRects[j].x + newFreeRects[j].w &&
+            newFreeRects[i].y + newFreeRects[i].h <= newFreeRects[j].y + newFreeRects[j].h) {
+          isContained = true; break;
+        }
+      }
+      // تجاهل المساحات الصغيرة جداً (أصغر من 1 سم)
+      if (!isContained && newFreeRects[i].w > 1 && newFreeRects[i].h > 1) {
+        freeRects.push(newFreeRects[i]);
+      }
     }
   }
 
