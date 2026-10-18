@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>حاسبة القطع</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- واجهة اختيار اللغة -->
+<div id="langScreen" class="screen active">
+  <h1>زمان</h1>
+  <p>الرجاء اختيار اللغة</p>
+  <div class="lang-buttons">
+    <button onclick="selectLang('ku')">کوردی</button>
+    <button onclick="selectLang('ar')">العربية</button>
+  </div>
+</div>
+
+<!-- واجهة الإدخال -->
+<div id="inputScreen" class="screen">
+  <h1 id="titleInput">حاسبة القطع</h1>
+
+  <div class="card">
+    <h2 id="labelBoard">قياس اللوح الكامل</h2>
+    <div class="row">
+      <input type="number" id="boardW" placeholder="العرض (سم)" value="320">
+      <input type="number" id="boardH" placeholder="الطول (سم)" value="200">
+    </div>
+    <div class="row">
+      <input type="number" id="kerf" placeholder="سماكة المنشار (سم)" value="0.3" step="0.1">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 id="labelPieces">القطع المطلوبة</h2>
+    <div id="piecesList"></div>
+    <button class="btn-add" onclick="addPieceRow()">+ إضافة قطعة</button>
+  </div>
+
+  <button class="btn-primary" onclick="calculate()" id="btnCalc">احسب</button>
+</div>
+
+<!-- واجهة النتائج -->
+<div id="resultScreen" class="screen">
+  <div class="result-header">
+    <button onclick="goBack()" class="btn-back">←</button>
+    <h2 id="labelResult">مخطط القطع</h2>
+  </div>
+  <div id="resultInfo" class="info"></div>
+  <div id="svgContainer" class="svg-box"></div>
+  <button class="btn-primary" onclick="goBack()" id="btnAgain">قطع جديد</button>
+</div>
+
+<script src="packer.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
