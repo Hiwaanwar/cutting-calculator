@@ -1,34 +1,36 @@
 function renderResult(boardW, boardH, result, pieces, kerf) {
   const t = i18n[lang];
   const placed = result.placed;
-  const failed = result.failed; // القطع التي لم تكفي
+  const failed = result.failed; // استدعاء القطع الناقصة
   const totalArea = boardW * boardH;
   const usedArea = placed.reduce((s, p) => s + (p.w * p.h), 0);
   const wasteArea = totalArea - usedArea;
   const wastePercent = ((wasteArea / totalArea) * 100).toFixed(1);
   const usedPercent = ((usedArea / totalArea) * 100).toFixed(1);
 
-  // حساب عدد الألواح (الطبقات)
   const totalQty = pieces.reduce((s,p)=>s+p.qty,0);
+  
+  // حساب هل يحتاج لوح اخر ام لا
   const boardsNeeded = failed.length > 0 ? "أكثر من لوح (تحتاج لوح إضافي)" : "لوح واحد فقط";
 
   const info = document.getElementById('resultInfo');
   
+  // بناء الإحصائيات مع المربع الأزرق
   let html = `
     <div style="background:#1e3a5f; color:white; padding:8px; border-radius:8px; text-align:center; margin-bottom:12px; font-weight:bold;">
       عدد الألواح المطلوبة: ${boardsNeeded}
     </div>
-    <div>${t.used}: <span>${usedPercent}%</span> (من اللوح الحالي)</div>
+    <div>${t.used}: <span>${usedPercent}%</span></div>
     <div>${t.waste}: <span>${wastePercent}%</span> (${wasteArea.toFixed(0)} سم²)</div>
     <div>عدد القطع في هذا اللوح: ${placed.length} / ${totalQty}</div>
   `;
 
-  // إضافة التنبيه الأحمر إذا كان هناك قطع لم تكفي
+  // المربع الأحمر للقطع الناقصة
   if (failed.length > 0) {
     html += `
       <div style="background:#ffe6e6; border: 2px solid #ff4d4d; color:#cc0000; padding:10px; border-radius:8px; margin-top:12px; text-align:center;">
         <div style="font-size:18px; font-weight:bold; margin-bottom:6px;">⚠️ تنبيه: لم تكفي المساحة!</div>
-        <div>يوجد <strong>${failed.length}</strong> قطعة لم تجد لها مكاناً في هذا اللوح، وتحتاج إلى لوح آخر.</div>
+        <div>يوجد <strong>${failed.length}</strong> قطعة ناقصة تحتاج إلى لوح آخر.</div>
         <div style="font-size:14px; margin-top:8px; background:#fff; padding:6px; border-radius:6px;">
           ${failed.map(f => `<span style="display:inline-block; margin:2px; padding:2px 6px; border:1px solid #ff4d4d; border-radius:4px;">${f.w}×${f.h}</span>`).join('')}
         </div>
@@ -38,7 +40,7 @@ function renderResult(boardW, boardH, result, pieces, kerf) {
 
   info.innerHTML = html;
 
-  // إعدادات الرسم
+  // --- بقية كود الرسم (SVG) ---
   const scale = 600 / Math.max(boardW, boardH);
   const svgW = boardW * scale;
   const svgH = boardH * scale;
