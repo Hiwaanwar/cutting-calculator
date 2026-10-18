@@ -49,6 +49,7 @@ const i18n = {
 let lang = 'ku';
 let pieceIdCounter = 0;
 
+// ========== إعدادات اللغة ==========
 function selectLang(l) {
   lang = l;
   localStorage.setItem('cutting_lang', l);
@@ -72,6 +73,7 @@ function applyLang() {
   document.getElementById('kerf').placeholder = t.kerf;
 }
 
+// ========== التنقل بين الشاشات ==========
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -81,35 +83,37 @@ function goBack() {
   showScreen('inputScreen');
 }
 
-function addPieceRow(w = '', h = '', qty = 1) {
+// ========== إدارة القطع ==========
+function addPieceRow(w = '', h = '', qty = '') {
   const t = i18n[lang];
   const div = document.createElement('div');
   div.className = 'piece-row';
   div.dataset.id = ++pieceIdCounter;
   
+  // إضافة الحقول الفارغة مع العناوين فوقها
   div.innerHTML = `
-    <div style="display:flex; gap:6px; width:100%; margin-bottom:2px;">
-      <div style="flex:1; text-align:center; font-size:11px; color:#666;">${t.width}</div>
-      <div style="flex:1; text-align:center; font-size:11px; color:#666;">${t.height}</div>
-      <div style="flex:1; text-align:center; font-size:11px; color:#666;">${t.qty}</div>
-      <div style="width:38px;"></div>
+    <div style="display:flex; gap:8px; width:100%; margin-bottom:4px; padding-right:50px;">
+      <div style="flex:1; text-align:center; font-size:12px; color:#555; font-weight:bold;">${t.width}</div>
+      <div style="flex:1; text-align:center; font-size:12px; color:#555; font-weight:bold;">${t.height}</div>
+      <div style="flex:1; text-align:center; font-size:12px; color:#555; font-weight:bold;">${t.qty}</div>
     </div>
-    <div style="display:flex; gap:6px; width:100%; align-items:center;">
-      <input type="number" placeholder="${t.width}" value="${w}" class="pw">
-      <input type="number" placeholder="${t.height}" value="${h}" class="ph">
-      <input type="number" placeholder="${t.qty}" value="${qty}" min="1" class="pq">
-      <button onclick="this.parentElement.parentElement.remove()" style="width:38px;">✕</button>
+    <div style="display:flex; gap:8px; width:100%; align-items:center;">
+      <input type="number" placeholder="${t.width}" value="${w}" class="pw" inputmode="decimal">
+      <input type="number" placeholder="${t.height}" value="${h}" class="ph" inputmode="decimal">
+      <input type="number" placeholder="${t.qty}" value="${qty}" class="pq" inputmode="numeric">
+      <button onclick="this.parentElement.parentElement.remove()" style="width:42px;">✕</button>
     </div>
   `;
   document.getElementById('piecesList').appendChild(div);
 }
 
+// ========== الحساب الرئيسي ==========
 function calculate() {
   const boardW = parseFloat(document.getElementById('boardW').value);
   const boardH = parseFloat(document.getElementById('boardH').value);
   const kerf = parseFloat(document.getElementById('kerf').value) || 0;
 
-  if (!boardW || !boardH) return alert('يرجى إدخال قياس اللوح');
+  if (!boardW || !boardH) return alert(i18n[lang].title + ': يرجى إدخال قياس اللوح');
 
   const rows = document.querySelectorAll('#piecesList .piece-row');
   const pieces = [];
@@ -122,13 +126,14 @@ function calculate() {
     }
   });
 
-  if (pieces.length === 0) return alert('يرجى إضافة قطعة واحدة على الأقل');
+  if (pieces.length === 0) return alert(i18n[lang].title + ': يرجى إضافة قطعة واحدة على الأقل');
 
   const result = packPieces(boardW, boardH, pieces, kerf);
   renderResult(boardW, boardH, result, pieces, kerf);
   showScreen('resultScreen');
 }
 
+// ========== رسم النتائج ==========
 function renderResult(boardW, boardH, result, pieces, kerf) {
   const t = i18n[lang];
   const placed = result.placed;
@@ -201,6 +206,7 @@ function renderResult(boardW, boardH, result, pieces, kerf) {
   document.getElementById('svgContainer').innerHTML = svg;
 }
 
+// ========== التهيئة ==========
 window.onload = function() {
   const saved = localStorage.getItem('cutting_lang');
   if (saved) {
@@ -212,6 +218,4 @@ window.onload = function() {
   } else {
     showScreen('langScreen');
   }
-  addPieceRow(40, 80, 4);
-  addPieceRow(20, 200, 3);
 };
