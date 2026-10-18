@@ -15,15 +15,30 @@ h2 { font-size: 16px; margin-bottom: 12px; color: #333; text-align: right; }
   gap: 6px;
   background: #000;
   color: #fff;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: 20px;
   font-size: 14px;
   font-weight: 600;
   width: fit-content;
-  margin: 0 auto 15px auto;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 .tiktok-badge svg { fill: #fff; }
+
+/* تصميم رقم الهاتف والأجرة */
+.contact-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #333;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  direction: ltr; /* لضمان ظهور الأرقام بشكل صحيح */
+}
 
 .card { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
 
