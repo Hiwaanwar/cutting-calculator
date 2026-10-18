@@ -24,14 +24,14 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Remove old android folder (Force Clean)
+      - name: Remove old android folder
         run: rm -rf android
 
       - name: Add Capacitor Android
         run: npx cap add android
 
-      - name: Sync web assets
-        run: npx cap sync android
+      - name: Sync web assets (Force Copy)
+        run: npx cap copy android && npx cap sync android
 
       - name: Build APK
         run: cd android && chmod +x gradlew && ./gradlew assembleDebug
@@ -39,5 +39,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug-new
+          name: app-debug-final
           path: android/app/build/outputs/apk/debug/*.apk
