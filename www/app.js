@@ -56,7 +56,6 @@ function applyLang() {
   document.getElementById('labelResult').textContent = t.labelResult;
   document.getElementById('btnAgain').textContent = t.again;
   
-  // تحديث placeholders
   document.getElementById('boardW').placeholder = t.width;
   document.getElementById('boardH').placeholder = t.height;
   document.getElementById('kerf').placeholder = t.kerf;
@@ -89,7 +88,6 @@ function addPieceRow(w = '', h = '', qty = 1) {
 
 // ========== الحساب الرئيسي ==========
 function calculate() {
-  const t = i18n[lang];
   const boardW = parseFloat(document.getElementById('boardW').value);
   const boardH = parseFloat(document.getElementById('boardH').value);
   const kerf = parseFloat(document.getElementById('kerf').value) || 0;
@@ -110,16 +108,16 @@ function calculate() {
   if (pieces.length === 0) return alert('يرجى إضافة قطعة واحدة على الأقل');
 
   const result = packPieces(boardW, boardH, pieces, kerf);
-
-  // عرض النتائج
-  renderResult(boardW, boardH, result, pieces, kerf, t);
+  renderResult(boardW, boardH, result, pieces, kerf);
   showScreen('resultScreen');
 }
 
-function renderResult(boardW, boardH, result, pieces, kerf, t) {
+// ========== رسم النتائج ==========
+function renderResult(boardW, boardH, result, pieces, kerf) {
+  const t = i18n[lang];
   const placed = result.placed;
   const totalArea = boardW * boardH;
-  const usedArea = placed.reduce((s, p) => s + p.w * p.h, 0);
+  const usedArea = placed.reduce((s, p) => s + (p.w * p.h), 0);
   const wasteArea = totalArea - usedArea;
   const wastePercent = ((wasteArea / totalArea) * 100).toFixed(1);
   const usedPercent = ((usedArea / totalArea) * 100).toFixed(1);
@@ -129,20 +127,23 @@ function renderResult(boardW, boardH, result, pieces, kerf, t) {
   info.innerHTML = `
     <div>${t.used}: <span>${usedPercent}%</span></div>
     <div>${t.waste}: <span>${wastePercent}%</span> (${wasteArea.toFixed(0)} سم²)</div>
-    <div>عدد القطع الموضوعة: ${placed.length} / ${pieces.reduce((s,p)=>s+p.qty,0)}</div>
+    <div>عدد القطع: ${placed.length} / ${pieces.reduce((s,p)=>s+p.qty,0)}</div>
   `;
 
-  // SVG
+  // إعدادات الرسم SVG
   const scale = 600 / Math.max(boardW, boardH);
   const svgW = boardW * scale;
   const svgH = boardH * scale;
 
-  let svg = `<svg viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg">`;
-  // اللوح
-  svg += `<rect x="0" y="0" width="${svgW}" height="${svgH}" fill="#f9f9f9" stroke="#333" stroke-width="2"/>`;
+  let svg = `<svg viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg" style="direction: ltr;">`;
+  
+  // رسم اللوح الأساسي
+  svg += `<rect x="0" y="0" width="${svgW}" height="${svgH}" fill="#fcfcfc" stroke="#333" stroke-width="2"/>`;
 
+  // ألوان للقطع
   const colors = ['#FF6B6B','#4ECDC4','#45B7D1','#96CEB4','#FFEAA7','#DDA0DD','#98D8C8','#F7DC6F','#BB8FCE','#85C1E9'];
 
+  // رسم القطع
   placed.forEach((p, i) => {
     const cx = p.x * scale;
     const cy = p.y * scale;
@@ -150,14 +151,26 @@ function renderResult(boardW, boardH, result, pieces, kerf, t) {
     const ch = p.h * scale;
     const color = colors[i % colors.length];
 
-    svg += `<rect x="${cx}" y="${cy}" width="${cw}" height="${ch}" fill="${color}" fill-opacity="0.75" stroke="#333" stroke-width="1"/>`;
+    // رسم القطعة
+    svg += `<rect x="${cx}" y="${cy}" width="${cw}" height="${ch}" fill="${color}" fill-opacity="0.8" stroke="#222" stroke-width="1"/>`;
 
-    // النص (الحجم معكوس لأن dir=rtl)
+    // إضافة النص (الأرقام) في المنتصف
     const label = `${p.origW}×${p.origH}`;
-    const fontSize = Math.min(14, Math.max(8, cw / 6));
+    
+    // ضبط حجم الخط ليكون مناسباً لحجم القطعة
+    const fontSize = Math.min(16, Math.max(8, cw / 5, ch / 2.5));
+    
     const textX = cx + cw / 2;
     const textY = cy + ch / 2;
-    svg += `<text x="${textX}" y="${textY}" text-anchor="middle" dominant-baseline="middle" font-size="${fontSize}" fill="#000" transform="translate(${textX},${textY}) scale(-1,1) translate(${-textX},${-textY})">${label}</text>`;
+    
+    // إصلاح اتجاه النص (dir=ltr) حتى تظهر الأرقام بالترتيب الصحيح، مع تدوير مناسب
+    if (cw > ch * 1.5) {
+       // قطعة أفقية
+       svg += `<text x="${textX}" y="${textY}" text-anchor="middle" dominant-baseline="middle" font-size="${fontSize}" fill="#000" font-weight="bold" style="direction:ltr;">${label}</text>`;
+    } else {
+       // قطعة عمودية أو مربعة
+       svg += `<text x="${textX}" y="${textY}" text-anchor="middle" dominant-baseline="middle" font-size="${fontSize}" fill="#000" font-weight="bold" style="direction:ltr;">${label}</text>`;
+    }
   });
 
   svg += `</svg>`;
@@ -176,7 +189,6 @@ window.onload = function() {
   } else {
     showScreen('langScreen');
   }
-  // إضافة صف قطعة افتراضي
   addPieceRow(40, 80, 4);
   addPieceRow(20, 200, 3);
 };
