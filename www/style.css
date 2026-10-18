@@ -1,0 +1,34 @@
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+body { background: #f2f4f7; color: #1a1a1a; padding: 12px; padding-bottom: 80px; }
+
+.screen { display: none; }
+.screen.active { display: block; }
+
+h1 { font-size: 22px; margin-bottom: 16px; text-align: center; color: #1e3a5f; }
+h2 { font-size: 16px; margin-bottom: 10px; color: #333; }
+
+.card { background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+
+.row { display: flex; gap: 8px; margin-bottom: 8px; }
+.row input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px; text-align: center; }
+.row input:focus { outline: 2px solid #1e3a5f; border-color: transparent; }
+
+#piecesList .piece-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+#piecesList input { padding: 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; text-align: center; width: 0; flex: 1; }
+#piecesList button { background: #e74c3c; color: #fff; border: none; border-radius: 6px; padding: 8px 10px; font-size: 14px; cursor: pointer; }
+
+.btn-add { width: 100%; padding: 10px; background: #e8eef5; color: #1e3a5f; border: 1px dashed #1e3a5f; border-radius: 8px; font-size: 14px; margin-top: 6px; cursor: pointer; }
+.btn-primary { width: 100%; padding: 14px; background: #1e3a5f; color: #fff; border: none; border-radius: 12px; font-size: 17px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+.btn-back { background: none; border: none; font-size: 22px; cursor: pointer; padding: 4px 10px; color: #1e3a5f; }
+
+.lang-buttons { display: flex; flex-direction: column; gap: 14px; margin-top: 40px; }
+.lang-buttons button { padding: 18px; font-size: 20px; border: 2px solid #1e3a5f; background: #fff; color: #1e3a5f; border-radius: 14px; cursor: pointer; font-weight: 600; }
+
+.result-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.result-header h2 { margin: 0; }
+
+.info { background: #fff; border-radius: 10px; padding: 12px; margin-bottom: 12px; font-size: 14px; line-height: 1.7; }
+.info span { font-weight: 700; color: #1e3a5f; }
+
+.svg-box { background: #fff; border-radius: 12px; padding: 10px; overflow: auto; margin-bottom: 14px; }
+.svg-box svg { display: block; width: 100%; height: auto; }
