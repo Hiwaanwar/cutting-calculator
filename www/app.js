@@ -13,7 +13,14 @@ const i18n = {
     addPiece: '+ پارچە زیاد بکە',
     again: 'بڕینی نوێ',
     waste: 'بەفیڕۆچوو',
-    used: 'بەکارهاتوو'
+    used: 'بەکارهاتوو',
+    boardsNeeded: 'ژمارەی تەختە پێویستەکان',
+    oneBoard: 'تەنها یەک تەختە',
+    moreBoards: 'زیاتر لە یەک تەختە (پێویستت بە تەختەی زیاترە)',
+    warnTitle: '⚠️ ئاگاداری: شوێن نەماوە!',
+    warnDesc: 'پارچەی کەمە، پێویستت بە تەختەیەکی تر هەیە.',
+    piecesInBoard: 'ژمارەی پارچەکان لەم تەختەیەدا',
+    totalPieces: 'کۆی پارچەکان'
   },
   ar: {
     title: 'حاسبة القطع',
@@ -28,21 +35,27 @@ const i18n = {
     addPiece: '+ إضافة قطعة',
     again: 'قطع جديد',
     waste: 'الهوالك',
-    used: 'المستخدم'
+    used: 'المستخدم',
+    boardsNeeded: 'عدد الألواح المطلوبة',
+    oneBoard: 'لوح واحد فقط',
+    moreBoards: 'أكثر من لوح (تحتاج لوح إضافي)',
+    warnTitle: '⚠️ تنبيه: لم تكفي المساحة!',
+    warnDesc: 'قطعة ناقصة تحتاج إلى لوح آخر.',
+    piecesInBoard: 'عدد القطع في هذا اللوح',
+    totalPieces: 'إجمالي القطع'
   }
 };
 
 let lang = 'ku';
 let pieceIdCounter = 0;
 
-// ========== إعدادات اللغة ==========
 function selectLang(l) {
   lang = l;
   localStorage.setItem('cutting_lang', l);
   document.documentElement.lang = l;
   document.documentElement.dir = 'rtl';
   applyLang();
-  showScreen('inputScreen'); // الانتقال لواجهة الإدخال
+  showScreen('inputScreen');
 }
 
 function applyLang() {
@@ -59,7 +72,6 @@ function applyLang() {
   document.getElementById('kerf').placeholder = t.kerf;
 }
 
-// ========== التنقل بين الشاشات ==========
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -69,7 +81,6 @@ function goBack() {
   showScreen('inputScreen');
 }
 
-// ========== إدارة القطع ==========
 function addPieceRow(w = '', h = '', qty = 1) {
   const t = i18n[lang];
   const div = document.createElement('div');
@@ -93,7 +104,6 @@ function addPieceRow(w = '', h = '', qty = 1) {
   document.getElementById('piecesList').appendChild(div);
 }
 
-// ========== الحساب الرئيسي ==========
 function calculate() {
   const boardW = parseFloat(document.getElementById('boardW').value);
   const boardH = parseFloat(document.getElementById('boardH').value);
@@ -119,11 +129,10 @@ function calculate() {
   showScreen('resultScreen');
 }
 
-// ========== رسم النتائج ==========
 function renderResult(boardW, boardH, result, pieces, kerf) {
   const t = i18n[lang];
   const placed = result.placed;
-  const failed = result.failed || []; // حماية في حال لم يرجع المتغير
+  const failed = result.failed || [];
   const totalArea = boardW * boardH;
   const usedArea = placed.reduce((s, p) => s + (p.w * p.h), 0);
   const wasteArea = totalArea - usedArea;
@@ -131,24 +140,24 @@ function renderResult(boardW, boardH, result, pieces, kerf) {
   const usedPercent = ((usedArea / totalArea) * 100).toFixed(1);
 
   const totalQty = pieces.reduce((s,p)=>s+p.qty,0);
-  const boardsNeeded = failed.length > 0 ? "أكثر من لوح (تحتاج لوح إضافي)" : "لوح واحد فقط";
+  const boardsNeeded = failed.length > 0 ? t.moreBoards : t.oneBoard;
 
   const info = document.getElementById('resultInfo');
   
   let html = `
     <div style="background:#1e3a5f; color:white; padding:8px; border-radius:8px; text-align:center; margin-bottom:12px; font-weight:bold;">
-      عدد الألواح المطلوبة: ${boardsNeeded}
+      ${t.boardsNeeded}: ${boardsNeeded}
     </div>
     <div>${t.used}: <span>${usedPercent}%</span></div>
     <div>${t.waste}: <span>${wastePercent}%</span> (${wasteArea.toFixed(0)} سم²)</div>
-    <div>عدد القطع في هذا اللوح: ${placed.length} / ${totalQty}</div>
+    <div>${t.piecesInBoard}: ${placed.length} / ${totalQty}</div>
   `;
 
   if (failed.length > 0) {
     html += `
       <div style="background:#ffe6e6; border: 2px solid #ff4d4d; color:#cc0000; padding:10px; border-radius:8px; margin-top:12px; text-align:center;">
-        <div style="font-size:18px; font-weight:bold; margin-bottom:6px;">⚠️ تنبيه: لم تكفي المساحة!</div>
-        <div>يوجد <strong>${failed.length}</strong> قطعة ناقصة تحتاج إلى لوح آخر.</div>
+        <div style="font-size:18px; font-weight:bold; margin-bottom:6px;">${t.warnTitle}</div>
+        <div>يوجد <strong>${failed.length}</strong> ${t.warnDesc}</div>
         <div style="font-size:14px; margin-top:8px; background:#fff; padding:6px; border-radius:6px;">
           ${failed.map(f => `<span style="display:inline-block; margin:2px; padding:2px 6px; border:1px solid #ff4d4d; border-radius:4px;">${f.w}×${f.h}</span>`).join('')}
         </div>
@@ -192,7 +201,6 @@ function renderResult(boardW, boardH, result, pieces, kerf) {
   document.getElementById('svgContainer').innerHTML = svg;
 }
 
-// ========== التهيئة ==========
 window.onload = function() {
   const saved = localStorage.getItem('cutting_lang');
   if (saved) {
