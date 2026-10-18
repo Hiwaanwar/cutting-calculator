@@ -74,3 +74,4 @@ function renderResult(boardW, boardH, result, pieces, kerf) {
   svg += `</svg>`;
   document.getElementById('svgContainer').innerHTML = svg;
 }
+ 
