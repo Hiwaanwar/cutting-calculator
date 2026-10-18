@@ -1,6 +1,8 @@
 // ========== الترجمة ==========
 const i18n = {
   ku: {
+    langTitle: 'زمان',
+    langDesc: 'تکایە زمانێ خۆ هەڵبژێرە',
     title: 'حاسبة بڕین',
     labelBoard: 'پێوانەی تەختەکە',
     labelPieces: 'پارچەکان',
@@ -20,9 +22,14 @@ const i18n = {
     warnTitle: '⚠️ ئاگاداری: شوێن نەماوە!',
     warnDesc: 'پارچەی کەمە، پێویستت بە تەختەیەکی تر هەیە.',
     piecesInBoard: 'ژمارەی پارچەکان لەم تەختەیەدا',
-    totalPieces: 'کۆی پارچەکان'
+    totalPieces: 'کۆی پارچەکان',
+    errBoard: 'تکایە پێوانەی تەختەکە بنووسە',
+    errPieces: 'تکایە لانیکەم یەک پارچە زیاد بکە',
+    piecesCount: 'پارچە'
   },
   ar: {
+    langTitle: 'زمان',
+    langDesc: 'الرجاء اختيار اللغة',
     title: 'حاسبة القطع',
     labelBoard: 'قياس اللوح الكامل',
     labelPieces: 'القطع المطلوبة',
@@ -42,7 +49,10 @@ const i18n = {
     warnTitle: '⚠️ تنبيه: لم تكفي المساحة!',
     warnDesc: 'قطعة ناقصة تحتاج إلى لوح آخر.',
     piecesInBoard: 'عدد القطع في هذا اللوح',
-    totalPieces: 'إجمالي القطع'
+    totalPieces: 'إجمالي القطع',
+    errBoard: 'يرجى إدخال قياس اللوح',
+    errPieces: 'يرجى إضافة قطعة واحدة على الأقل',
+    piecesCount: 'قطعة'
   }
 };
 
@@ -61,10 +71,13 @@ function selectLang(l) {
 
 function applyLang() {
   const t = i18n[lang];
+  document.getElementById('langScreenTitle').textContent = t.langTitle;
+  document.getElementById('langScreenDesc').textContent = t.langDesc;
   document.getElementById('titleInput').textContent = t.title;
   document.getElementById('labelBoard').textContent = t.labelBoard;
   document.getElementById('labelPieces').textContent = t.labelPieces;
   document.getElementById('btnCalc').textContent = t.btnCalc;
+  document.getElementById('btnAddPiece').textContent = t.addPiece;
   document.getElementById('labelResult').textContent = t.labelResult;
   document.getElementById('btnAgain').textContent = t.again;
   
@@ -90,7 +103,6 @@ function addPieceRow(w = '', h = '', qty = '') {
   div.className = 'piece-row';
   div.dataset.id = ++pieceIdCounter;
   
-  // إضافة الحقول الفارغة مع العناوين فوقها
   div.innerHTML = `
     <div style="display:flex; gap:8px; width:100%; margin-bottom:4px; padding-right:50px;">
       <div style="flex:1; text-align:center; font-size:12px; color:#555; font-weight:bold;">${t.width}</div>
@@ -109,11 +121,12 @@ function addPieceRow(w = '', h = '', qty = '') {
 
 // ========== الحساب الرئيسي ==========
 function calculate() {
+  const t = i18n[lang];
   const boardW = parseFloat(document.getElementById('boardW').value);
   const boardH = parseFloat(document.getElementById('boardH').value);
   const kerf = parseFloat(document.getElementById('kerf').value) || 0;
 
-  if (!boardW || !boardH) return alert(i18n[lang].title + ': يرجى إدخال قياس اللوح');
+  if (!boardW || !boardH) return alert(t.errBoard);
 
   const rows = document.querySelectorAll('#piecesList .piece-row');
   const pieces = [];
@@ -126,7 +139,7 @@ function calculate() {
     }
   });
 
-  if (pieces.length === 0) return alert(i18n[lang].title + ': يرجى إضافة قطعة واحدة على الأقل');
+  if (pieces.length === 0) return alert(t.errPieces);
 
   const result = packPieces(boardW, boardH, pieces, kerf);
   renderResult(boardW, boardH, result, pieces, kerf);
