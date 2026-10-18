@@ -41,7 +41,7 @@ function packPieces(boardW, boardH, pieces, kerf) {
         origW: piece.w, origH: piece.h
       });
     } else {
-      failed.push({ w: piece.w, h: piece.h }); // القطع التي لم تجد مكان
+      failed.push({ w: piece.w, h: piece.h });
     }
   }
 
