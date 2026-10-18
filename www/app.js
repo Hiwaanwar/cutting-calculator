@@ -1,7 +1,129 @@
+// ========== الترجمة ==========
+const i18n = {
+  ku: {
+    title: 'حاسبة بڕین',
+    labelBoard: 'پێوانەی تەختەکە',
+    labelPieces: 'پارچەکان',
+    btnCalc: 'حیساب بکە',
+    labelResult: 'نەخشەی بڕین',
+    width: 'پانی',
+    height: 'درێژی',
+    kerf: 'ئەستووری مشاری',
+    qty: 'ژمارە',
+    addPiece: '+ پارچە زیاد بکە',
+    again: 'بڕینی نوێ',
+    waste: 'بەفیڕۆچوو',
+    used: 'بەکارهاتوو'
+  },
+  ar: {
+    title: 'حاسبة القطع',
+    labelBoard: 'قياس اللوح الكامل',
+    labelPieces: 'القطع المطلوبة',
+    btnCalc: 'احسب',
+    labelResult: 'مخطط القطع',
+    width: 'العرض',
+    height: 'الطول',
+    kerf: 'سماكة المنشار',
+    qty: 'العدد',
+    addPiece: '+ إضافة قطعة',
+    again: 'قطع جديد',
+    waste: 'الهوالك',
+    used: 'المستخدم'
+  }
+};
+
+let lang = 'ku';
+let pieceIdCounter = 0;
+
+// ========== إعدادات اللغة ==========
+function selectLang(l) {
+  lang = l;
+  localStorage.setItem('cutting_lang', l);
+  document.documentElement.lang = l;
+  document.documentElement.dir = 'rtl';
+  applyLang();
+  showScreen('inputScreen'); // الانتقال لواجهة الإدخال
+}
+
+function applyLang() {
+  const t = i18n[lang];
+  document.getElementById('titleInput').textContent = t.title;
+  document.getElementById('labelBoard').textContent = t.labelBoard;
+  document.getElementById('labelPieces').textContent = t.labelPieces;
+  document.getElementById('btnCalc').textContent = t.btnCalc;
+  document.getElementById('labelResult').textContent = t.labelResult;
+  document.getElementById('btnAgain').textContent = t.again;
+  
+  document.getElementById('boardW').placeholder = t.width;
+  document.getElementById('boardH').placeholder = t.height;
+  document.getElementById('kerf').placeholder = t.kerf;
+}
+
+// ========== التنقل بين الشاشات ==========
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goBack() {
+  showScreen('inputScreen');
+}
+
+// ========== إدارة القطع ==========
+function addPieceRow(w = '', h = '', qty = 1) {
+  const t = i18n[lang];
+  const div = document.createElement('div');
+  div.className = 'piece-row';
+  div.dataset.id = ++pieceIdCounter;
+  
+  div.innerHTML = `
+    <div style="display:flex; gap:6px; width:100%; margin-bottom:2px;">
+      <div style="flex:1; text-align:center; font-size:11px; color:#666;">${t.width}</div>
+      <div style="flex:1; text-align:center; font-size:11px; color:#666;">${t.height}</div>
+      <div style="flex:1; text-align:center; font-size:11px; color:#666;">${t.qty}</div>
+      <div style="width:38px;"></div>
+    </div>
+    <div style="display:flex; gap:6px; width:100%; align-items:center;">
+      <input type="number" placeholder="${t.width}" value="${w}" class="pw">
+      <input type="number" placeholder="${t.height}" value="${h}" class="ph">
+      <input type="number" placeholder="${t.qty}" value="${qty}" min="1" class="pq">
+      <button onclick="this.parentElement.parentElement.remove()" style="width:38px;">✕</button>
+    </div>
+  `;
+  document.getElementById('piecesList').appendChild(div);
+}
+
+// ========== الحساب الرئيسي ==========
+function calculate() {
+  const boardW = parseFloat(document.getElementById('boardW').value);
+  const boardH = parseFloat(document.getElementById('boardH').value);
+  const kerf = parseFloat(document.getElementById('kerf').value) || 0;
+
+  if (!boardW || !boardH) return alert('يرجى إدخال قياس اللوح');
+
+  const rows = document.querySelectorAll('#piecesList .piece-row');
+  const pieces = [];
+  rows.forEach(row => {
+    const w = parseFloat(row.querySelector('.pw').value);
+    const h = parseFloat(row.querySelector('.ph').value);
+    const q = parseInt(row.querySelector('.pq').value);
+    if (w > 0 && h > 0 && q > 0) {
+      pieces.push({ w, h, qty: q, id: row.dataset.id });
+    }
+  });
+
+  if (pieces.length === 0) return alert('يرجى إضافة قطعة واحدة على الأقل');
+
+  const result = packPieces(boardW, boardH, pieces, kerf);
+  renderResult(boardW, boardH, result, pieces, kerf);
+  showScreen('resultScreen');
+}
+
+// ========== رسم النتائج ==========
 function renderResult(boardW, boardH, result, pieces, kerf) {
   const t = i18n[lang];
   const placed = result.placed;
-  const failed = result.failed; // استدعاء القطع الناقصة
+  const failed = result.failed || []; // حماية في حال لم يرجع المتغير
   const totalArea = boardW * boardH;
   const usedArea = placed.reduce((s, p) => s + (p.w * p.h), 0);
   const wasteArea = totalArea - usedArea;
@@ -9,13 +131,10 @@ function renderResult(boardW, boardH, result, pieces, kerf) {
   const usedPercent = ((usedArea / totalArea) * 100).toFixed(1);
 
   const totalQty = pieces.reduce((s,p)=>s+p.qty,0);
-  
-  // حساب هل يحتاج لوح اخر ام لا
   const boardsNeeded = failed.length > 0 ? "أكثر من لوح (تحتاج لوح إضافي)" : "لوح واحد فقط";
 
   const info = document.getElementById('resultInfo');
   
-  // بناء الإحصائيات مع المربع الأزرق
   let html = `
     <div style="background:#1e3a5f; color:white; padding:8px; border-radius:8px; text-align:center; margin-bottom:12px; font-weight:bold;">
       عدد الألواح المطلوبة: ${boardsNeeded}
@@ -25,7 +144,6 @@ function renderResult(boardW, boardH, result, pieces, kerf) {
     <div>عدد القطع في هذا اللوح: ${placed.length} / ${totalQty}</div>
   `;
 
-  // المربع الأحمر للقطع الناقصة
   if (failed.length > 0) {
     html += `
       <div style="background:#ffe6e6; border: 2px solid #ff4d4d; color:#cc0000; padding:10px; border-radius:8px; margin-top:12px; text-align:center;">
@@ -40,7 +158,6 @@ function renderResult(boardW, boardH, result, pieces, kerf) {
 
   info.innerHTML = html;
 
-  // --- بقية كود الرسم (SVG) ---
   const scale = 600 / Math.max(boardW, boardH);
   const svgW = boardW * scale;
   const svgH = boardH * scale;
@@ -74,4 +191,19 @@ function renderResult(boardW, boardH, result, pieces, kerf) {
   svg += `</svg>`;
   document.getElementById('svgContainer').innerHTML = svg;
 }
- 
+
+// ========== التهيئة ==========
+window.onload = function() {
+  const saved = localStorage.getItem('cutting_lang');
+  if (saved) {
+    lang = saved;
+    document.documentElement.lang = saved;
+    document.documentElement.dir = 'rtl';
+    applyLang();
+    showScreen('inputScreen');
+  } else {
+    showScreen('langScreen');
+  }
+  addPieceRow(40, 80, 4);
+  addPieceRow(20, 200, 3);
+};
