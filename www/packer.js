@@ -1,6 +1,6 @@
 function packPieces(boardW, boardH, pieces, kerf) {
   const placed = [];
-  const failed = []; // مصفوفة جديدة للقطع التي لم تجد مكاناً
+  const failed = []; 
   let sorted = [];
   
   pieces.forEach(p => {
@@ -41,12 +41,10 @@ function packPieces(boardW, boardH, pieces, kerf) {
         origW: piece.w, origH: piece.h
       });
     } else {
-      // إذا لم يجد مكاناً، نضيفها إلى القطع الفاشلة
-      failed.push({ w: piece.w, h: piece.h });
+      failed.push({ w: piece.w, h: piece.h }); // القطع التي لم تجد مكان
     }
   }
 
-  // نرجع القطع الموضوعة، والقطع الفاشلة
   return { placed, failed, totalPieces: sorted.length };
 }
 
